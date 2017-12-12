@@ -2,6 +2,7 @@ var express = require('express');
 var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
+var sessions = require('express-session');
 
 
 var db = require('./app/config');
@@ -21,11 +22,15 @@ app.use(bodyParser.json());
 // Parse forms (signup/login)
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
+app.use(sessions({
+  secret: 'abcdefg-12345-hijk',
+  cookie: { maxAge: 9999999993 }
+}));
 
 
 app.get('/', 
   function(req, res) {
-    res.render('login');
+    res.render('index');
   });
 
 app.get('/create', 
@@ -77,6 +82,20 @@ app.get('/login',
     res.render('login');
   });
 
+app.post('/login',
+  (req, res) => {
+    let username = req.body.username;
+    let password = req.body.password;
+    if (util.checkDb(username, password)) {
+      console.alert('successful login!');
+      res.redirect('index');
+    } else {
+      console.alert('login denied!');
+      res.redirect('login');
+    }
+    
+  });
+
 app.get('/signup',
   (req, res) => {
     res.render('signup');
@@ -85,22 +104,24 @@ app.get('/signup',
 app.post('/signup',
   (req, res) => {
     new User({ username: req.body.username, password: req.body.password }).fetch().then(() => {
-      let hashed;
-      console.log('before encrypt');
-      util.encrypt(req.body.password, function(err, hash) {
-        if (err) {
-          console.log(err, 'encrypting');
-        } else {
-          hashed = hash;
-        }
-      });
+      // let hashed;
+      // console.log('before encrypt');
+      // util.encrypt(req.body.password, function(err, hash) {
+      //   if (err) {
+      //     console.log(err, 'encrypting');
+      //   } else {
+      //     hashed = hash;
+      //   }
+      // });
       console.log('after encrypt');
       Users.create({
         username: req.body.username,
-        password: hashed
+        password: req.body.password
       }).then((newUser) => {
-        res.status(201);
-        res.render('index');
+        req.session.regenerate(() => {
+          req.session.user = newUser.attributes.username;
+          res.redirect('/');
+        });
       });
     });
   });
