@@ -23,8 +23,12 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 app.use(sessions({
+  genid: function(req) {
+    return util.genSeshId(); // use UUIDs for session IDs
+  },
   secret: 'abcdefg-12345-hijk',
-  cookie: { maxAge: 9999999993 }
+  cookie: { maxAge: 25,
+            id: util.genSeshId() }
 }));
 
 
@@ -86,14 +90,17 @@ app.post('/login',
   (req, res) => {
     let username = req.body.username;
     let password = req.body.password;
-    if (util.checkDb(username, password)) {
-      console.alert('successful login!');
-      res.redirect('index');
-    } else {
-      console.alert('login denied!');
-      res.redirect('login');
-    }
-    
+    console.log(username, password, 'this is user& pass line 93');
+    util.checkDb(username, password).then((ifFound) => {
+      console.log(ifFound, 'ifFound line 95 in shortly.js');
+      if (ifFound) {
+        console.log('successful login!');
+        res.redirect('/');
+      } else {
+        console.log('login denied!');
+        res.redirect('/login');
+      }
+    });
   });
 
 app.get('/signup',
@@ -114,14 +121,16 @@ app.post('/signup',
       //   }
       // });
       console.log('after encrypt');
+      req.session.regenerate(() => {
+        req.session.user = req.body.username;
+      });
       Users.create({
         username: req.body.username,
-        password: req.body.password
+        password: req.body.password,
+        sessionId: req.session.id
       }).then((newUser) => {
-        req.session.regenerate(() => {
-          req.session.user = newUser.attributes.username;
-          res.redirect('/');
-        });
+        console.log(newUser, 'this is newUser on 131 in .then block');
+        res.redirect('/');
       });
     });
   });
