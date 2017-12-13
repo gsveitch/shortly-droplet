@@ -3,7 +3,7 @@ var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
 var sessions = require('express-session');
-
+var bcrypt = require("bcrypt-nodejs");
 
 var db = require('./app/config');
 var Users = require('./app/collections/users');
@@ -22,27 +22,31 @@ app.use(bodyParser.json());
 // Parse forms (signup/login)
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
+// app.use(sessions({
+//   genid: function(req) {
+//     return util.genSeshId(); // use UUIDs for session IDs
+//   },
+//   secret: 'abcdefg-12345-hijk',
+//   cookie: { maxAge: 25,
+//             id: util.genSeshId() }
+// }));
 app.use(sessions({
-  genid: function(req) {
-    return util.genSeshId(); // use UUIDs for session IDs
-  },
-  secret: 'abcdefg-12345-hijk',
-  cookie: { maxAge: 25,
-            id: util.genSeshId() }
+  secret: 'shh it\'s a secret',
+  resave: false,
+  saveUninitialized: true
 }));
 
 
-app.get('/', 
+app.get('/', util.checkUser, function(req, res) {
+    res.render('index');
+  });
+
+app.get('/create', util.checkUser,
   function(req, res) {
     res.render('index');
   });
 
-app.get('/create', 
-  function(req, res) {
-    res.render('index');
-  });
-
-app.get('/links', 
+app.get('/links', util.checkUser,
   function(req, res) {
     Links.reset().fetch().then(function(links) {
       res.status(200).send(links.models);
@@ -50,7 +54,7 @@ app.get('/links',
   });
 
 app.post('/links', 
-  function(req, res) {
+  function(req, res) {  
     var uri = req.body.url;
 
     if (!util.isValidUrl(uri)) {
@@ -90,15 +94,18 @@ app.post('/login',
   (req, res) => {
     let username = req.body.username;
     let password = req.body.password;
-    console.log(username, password, 'this is user& pass line 93');
-    util.checkDb(username, password).then((ifFound) => {
-      console.log(ifFound, 'ifFound line 95 in shortly.js');
-      if (ifFound) {
-        console.log('successful login!');
-        res.redirect('/');
-      } else {
-        console.log('login denied!');
+
+    new User({username: username}).fetch().then((user) => {
+      if (!user) {
         res.redirect('/login');
+      } else {
+        bcrypt.compare(password, user.get('password'), (err, match) =>  {
+          if (match) {
+            util.createSession(req, res, user);
+          } else {
+            res.redirect('/login');
+          }
+        })
       }
     });
   });
@@ -110,28 +117,20 @@ app.get('/signup',
 
 app.post('/signup',
   (req, res) => {
-    new User({ username: req.body.username, password: req.body.password }).fetch().then(() => {
-      // let hashed;
-      // console.log('before encrypt');
-      // util.encrypt(req.body.password, function(err, hash) {
-      //   if (err) {
-      //     console.log(err, 'encrypting');
-      //   } else {
-      //     hashed = hash;
-      //   }
-      // });
-      console.log('after encrypt');
-      req.session.regenerate(() => {
-        req.session.user = req.body.username;
-      });
-      Users.create({
-        username: req.body.username,
-        password: req.body.password,
-        sessionId: req.session.id
-      }).then((newUser) => {
-        console.log(newUser, 'this is newUser on 131 in .then block');
-        res.redirect('/');
-      });
+    new User({ username: req.body.username}).fetch().then((user) => {
+      if (!user) {
+        bcrypt.hash(req.body.password, null, null, (err, hash) => {
+          Users.create({
+            username: req.body.username,
+            password: hash
+          }).then((user) => {
+            util.createSession(req, res, user);
+          });
+        });
+      } else {
+        console.log('account already exists');
+        res.redirect('/signup');
+      }
     });
   });
 
