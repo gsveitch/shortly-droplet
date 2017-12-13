@@ -99,6 +99,7 @@ describe('', function() {
     });
 
     it('Only shortens valid urls, returning a 404 - Not found for invalid urls', function(done) {
+      this.timeout(5000);
       var options = {
         'method': 'POST',
         'uri': 'http://127.0.0.1:4568/links',
@@ -126,6 +127,7 @@ describe('', function() {
       };
 
       it('Responds with the short code', function(done) {
+        this.timeout(5000)
         requestWithSession(options, function(error, res, body) {
           expect(res.body.url).to.equal('http://roflzoo.com/');
           expect(res.body.code).to.not.be.null;
@@ -134,6 +136,7 @@ describe('', function() {
       });
 
       it('New links create a database entry', function(done) {
+        this.timeout(5000);
         requestWithSession(options, function(error, res, body) {
           db.knex('urls')
             .where('url', '=', 'http://roflzoo.com/')
@@ -148,6 +151,7 @@ describe('', function() {
       });
 
       it('Fetches the link url title', function (done) {
+        this.timeout(5000)
         requestWithSession(options, function(error, res, body) {
           db.knex('urls')
             .where('title', '=', 'Funny pictures of animals, funny dog pictures')
@@ -180,6 +184,7 @@ describe('', function() {
       });
 
       it('Returns the same shortened code', function(done) {
+        this.timeout(5000)
         var options = {
           'method': 'POST',
           'followAllRedirects': true,
@@ -254,6 +259,7 @@ describe('', function() {
   describe('Account Creation:', function() {
 
     it('Signup creates a user record', function(done) {
+      this.timeout(5000)
       var options = {
         'method': 'POST',
         'uri': 'http://127.0.0.1:4568/signup',
