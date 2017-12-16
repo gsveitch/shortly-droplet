@@ -1,5 +1,5 @@
 var app = require('./shortly.js');
-
-app.listen(80, function() {
-  console.log('Shortly is listening on 80');
+const port = process.env.PORT || 4568;
+app.listen(port, function() {
+  console.log('Shortly is listening on process.env.PORT ' + port);
 });
