@@ -6,7 +6,7 @@ var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
 var sessions = require('express-session');
-var bcrypt = require("bcrypt-nodejs");
+var bcrypt = require('bcrypt-nodejs');
 
 var db = require('./app/config');
 var Users = require('./app/collections/users');
@@ -41,8 +41,8 @@ app.use(sessions({
 
 
 app.get('/', util.checkUser, function(req, res) {
-    res.render('index');
-  });
+  res.render('index');
+});
 
 app.get('/create', util.checkUser,
   function(req, res) {
@@ -102,13 +102,13 @@ app.post('/login',
       if (!user) {
         res.redirect('/login');
       } else {
-        bcrypt.compare(password, user.get('password'), (err, match) =>  {
+        bcrypt.compare(password, user.get('password'), (err, match) => {
           if (match) {
             util.createSession(req, res, user);
           } else {
             res.redirect('/login');
           }
-        })
+        });
       }
     });
   });

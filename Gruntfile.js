@@ -3,7 +3,13 @@ module.exports = function (grunt) {
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
         concat: {
-            
+            options: {
+                separator: ';'
+            },
+            dist: {
+                src: ['public/lib/*.js', 'public/**/*.js'],
+                dest: 'public/dist/built.js'
+            }
         },
 
         mochaTest: {
@@ -22,15 +28,34 @@ module.exports = function (grunt) {
         },
 
         uglify: {
+            my_target: {
+                files: {
+                    'public/dist/output.min.js': ['public/dist/built.js']
+                }
+            }
         },
 
         eslint: {
             target: [
                 // Add list of files to lint here
+                'app/**/*.js', 
+                'lib/**/*.js', 
+                'public/client/**/*.js', 
+                'shortly.js', 
+                'index.js'
             ]
         },
 
         cssmin: {
+            options: {
+                mergeIntoShorthands: false,
+                roundingPrecision: -1
+            },
+            target: {
+                files: {
+                    'public/dist/output.css': ['public/style.css']
+                }
+            }
         },
 
         watch: {
@@ -52,6 +77,21 @@ module.exports = function (grunt) {
 
         shell: {
             prodServer: {
+                command: 'node index.js'
+            }
+        },
+
+        env: {
+            dev: {
+                NODE_ENV: 'development',
+            },
+        },
+
+        gitpush: {
+            your_target: {
+                options: {
+                    remote: 'live'
+                }
             }
         },
     });
@@ -64,6 +104,8 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-mocha-test');
     grunt.loadNpmTasks('grunt-shell');
     grunt.loadNpmTasks('grunt-nodemon');
+    grunt.loadNpmTasks('grunt-env');
+    grunt.loadNpmTasks('grunt-git');
 
     grunt.registerTask('server-dev', function (target) {
         grunt.task.run(['nodemon', 'watch']);
@@ -77,20 +119,29 @@ module.exports = function (grunt) {
         'mochaTest'
     ]);
 
-    grunt.registerTask('build', [
-    ]);
+    grunt.registerTask('gitPush', ['gitpush']);
+
+    grunt.registerTask('prodServer', ['shell']);
+
+    grunt.registerTask('build', ['test', 'eslint', 'concat', 'uglify', 'cssmin']);
+
+    grunt.registerTask('lint', ['eslint']);
 
     grunt.registerTask('upload', function (n) {
         if (grunt.option('prod')) {
             // add your production server task here
+            grunt.task.run(['prodServer']);
         } else {
             grunt.task.run(['server-dev']);
         }
     });
 
-    grunt.registerTask('deploy', [
-        // add your deploy tasks here
-    ]);
-
+    grunt.registerTask('deploy', function (n) {
+        if (grunt.option('prod')) {
+            grunt.task.run(['gitPush']);
+        } else {
+            grunt.task.run(['env', 'server-dev']);
+        }
+    });
 
 };

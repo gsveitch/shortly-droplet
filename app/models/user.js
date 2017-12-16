@@ -14,7 +14,7 @@ var User = db.Model.extend({
   // password references password from input field
   // not sure what will happen here but ultimately will allow functionality. maybe check for authentication?
   initialize: function() {
-    this.on("creating", this.hashPassword);
+    this.on('creating', this.hashPassword);
     // this.on('signup', (user) => {
     //   if (!user) {
     //     console.log('no user in user');
@@ -32,8 +32,8 @@ var User = db.Model.extend({
     return cipher(this.get('password'), null, null)
       .bind(this)
       .then((hash) => {
-        this.set('password', hash)
-      })
+        this.set('password', hash);
+      });
   }
 });
 
