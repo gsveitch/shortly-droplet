@@ -17,7 +17,7 @@ var Click = require('./app/models/click');
 
 var app = express();
 
-app.local.env = process.env;
+app.locals.env = process.env;
 
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
