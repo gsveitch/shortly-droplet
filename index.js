@@ -1,13 +1,8 @@
-var app = require('./shortly.js');
-require('dotenv').config();
+var app = require('./server-config.js');
 
 
-if (process.env.NODE_ENV === 'development') {
-  var port = process.env.PORT || 9000;
-} else {
-  var port = process.env.PORT || 80;
-}
-// const port = process.env.PORT || 80;
-app.listen(port, function() {
-  console.log('Shortly is listening on process.env.PORT ' + port + ' || ' + port);
-});
+var port = process.env.PORT || 4568;
+
+app.listen(port);
+
+console.log('Server now listening on port ' + port);

@@ -1,7 +1,7 @@
 {
-  "name": "shortly-express",
+  "name": "shortly-droplet",
   "version": "1.1.0",
-  "description": "Learn about authentication by building a link shortener",
+  "description": "Learn all about (the challenges of) deployment",
   "author": "Hack Reactor <curriculum.team@hackreactor.com>",
   "license": "UNLICENSED",
   "private": true,
@@ -9,11 +9,8 @@
     "node": ">=4.0.0"
   },
   "scripts": {
-    "postinstall": "curl -s https://raw.githubusercontent.com/reactorcore/pomander/master/bin/install | bash",
-    "start": "nodemon --ignore node_modules index.js",
-    "start:es6": "nodemon --exec babel-node --ignore node_modules index.js",
-    "test": "mocha --bail --reporter nyan test/ServerSpec.js",
-    "test:es6": "mocha --compilers js:babel-register --bail --reporter nyan test/ServerSpec.js",
+    "start": "grunt build && grunt upload",
+    "test": "grunt test",
     "lint": "eslint ./"
   },
   "dependencies": {
@@ -21,41 +18,29 @@
     "bluebird": "^3.3.4",
     "body-parser": "^1.15.0",
     "bookshelf": "^0.9.1",
-    "dotenv": "^4.0.0",
+    "chai": "^3.5.0",
+    "cookie-parser": "^1.4.1",
     "ejs": "^2.4.1",
+    "eslint-config-hackreactor": "git://github.com/reactorcore/eslint-config-hackreactor",
     "express": "^4.13.4",
-    "express-partials": "^0.3.0",
+    "express-partials": "^0.2.0",
     "express-session": "^1.13.0",
+    "grunt": "^0.4.4",
+    "grunt-contrib-concat": "^1.0.0",
+    "grunt-contrib-cssmin": "^1.0.1",
+    "grunt-contrib-uglify": "^1.0.1",
+    "grunt-contrib-watch": "^1.0.0",
+    "grunt-eslint": "^18.0.0",
+    "grunt-mocha-test": "^0.12.7",
+    "grunt-nodemon": "^0.4.1",
+    "grunt-shell": "^1.2.1",
     "knex": "^0.10.0",
-    "mongoose": "^4.13.7",
-    "nodemon": "^1.13.3",
+    "mocha": "^2.4.5",
+    "mongoose": "^4.4.10",
     "request": "^2.34.0",
-    "sqlite3": "^3.1.13"
+    "sqlite3": "~3.1.1"
   },
   "devDependencies": {
-    "babel-cli": "^6.7.5",
-    "babel-preset-es2015": "^6.6.0",
-    "babel-register": "^6.7.2",
-    "chai": "^3.5.0",
-    "eslint": "^4.13.1",
-    "eslint-config-hackreactor": "git://github.com/reactorcore/eslint-config-hackreactor.git",
-    "grunt": "^1.0.1",
-    "grunt-contrib-concat": "^1.0.1",
-    "grunt-contrib-cssmin": "^2.2.1",
-    "grunt-contrib-uglify": "^3.2.1",
-    "grunt-contrib-watch": "^1.0.0",
-    "grunt-env": "^0.4.4",
-    "grunt-eslint": "^20.1.0",
-    "grunt-git": "^1.0.9",
-    "grunt-mocha-test": "^0.13.3",
-    "grunt-nodemon": "^0.4.2",
-    "grunt-shell": "^2.1.0",
-    "mocha": "^2.4.5",
-    "supertest": "^3.0.0"
-  },
-  "babel": {
-    "presets": [
-      "es2015"
-    ]
+    "supertest": "^1.2.0"
   }
 }
