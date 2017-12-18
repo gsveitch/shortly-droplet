@@ -1,40 +1,28 @@
-var db = require('../config');
+var mongoose = require('mongoose');
 var bcrypt = require('bcrypt-nodejs');
 var Promise = require('bluebird');
 
+var userSchema = mongoose.Schema({
+  username: { type: String, required: true, index: { unique: true } },
+  password: { type: String, required: true }
+});
 
+var User = mongoose.model('User', userSchema);
 
-var User = db.Model.extend({
-  tableName: 'users',
-  clicks: () => {
-    // return this.hasMany(Click);
+User.comparePassword = function (candidatePassword, savedPassword, cb) {
+  bcrypt.compare(candidatePassword, savedPassword, function (err, isMatch) {
+    if (err) { return cb(err); }
+    cb(null, isMatch);
+  });
+};
 
-  },
-  // bothers references input field username/password
-  // password references password from input field
-  // not sure what will happen here but ultimately will allow functionality. maybe check for authentication?
-  initialize: function() {
-    this.on('creating', this.hashPassword);
-    // this.on('signup', (user) => {
-    //   if (!user) {
-    //     console.log('no user in user');
-    //   }
-    // });
-  },
-  comparePassword: function(attemptedPassword, callback) {
-    bcrypt.compare(attemptedPassword, this.get('password'), (err, isMatch) => {
-      callback(isMatch);
+userSchema.pre('save', function (next) {
+  var cipher = Promise.promisify(bcrypt.hash);
+  return cipher(this.password, null, null).bind(this)
+    .then(function (hash) {
+      this.password = hash;
+      next();
     });
-  },
-  hashPassword: function() {
-    var cipher = Promise.promisify(bcrypt.hash);
-
-    return cipher(this.get('password'), null, null)
-      .bind(this)
-      .then((hash) => {
-        this.set('password', hash);
-      });
-  }
 });
 
 module.exports = User;

@@ -1,57 +1,13 @@
-var path = require('path');
-var knex = require('knex')({
-  client: 'sqlite3',
-  connection: {
-    filename: path.join(__dirname, '../db/shortly.sqlite')
-  },
-  useNullAsDefault: true
+var mongoose = require('mongoose');
+
+mongoURI = 'mongodb://localhost/shortlydb';
+mongoose.connect(mongoURI);
+
+// Run in seperate terminal window using 'mongod'
+var db = mongoose.connection;
+db.on('error', console.error.bind(console, 'connection error:'));
+db.once('open', function () {
+  console.log('Mongodb connection open');
 });
-var db = require('bookshelf')(knex);
-
-db.knex.schema.hasTable('urls').then(function(exists) {
-  if (!exists) {
-    db.knex.schema.createTable('urls', function (link) {
-      link.increments('id').primary();
-      link.string('url', 255);
-      link.string('baseUrl', 255);
-      link.string('code', 100);
-      link.string('title', 255);
-      link.integer('visits');
-      link.timestamps();
-    }).then(function (table) {
-      console.log('Created Table', table);
-    });
-  }
-});
-
-db.knex.schema.hasTable('clicks').then(function(exists) {
-  if (!exists) {
-    db.knex.schema.createTable('clicks', function (click) {
-      click.increments('id').primary();
-      click.integer('linkId');
-      click.timestamps();
-    }).then(function (table) {
-      console.log('Created Table', table);
-    });
-  }
-});
-
-/************************************************************/
-// Add additional schema definitions below
-/************************************************************/
-
-db.knex.schema.hasTable('users').then((exists) => {
-  if (!exists) {
-    db.knex.schema.createTable('users', (user) => {
-      user.string('username', 60);
-      user.string('password', 60);
-      user.integer('sessionId');
-      user.increments('id').primary();
-    }).then((table) => {
-      console.log('Created Table', table);
-    });
-  }
-});
-
 
 module.exports = db;
