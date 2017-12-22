@@ -11,18 +11,19 @@ var linkSchema = mongoose.Schema({
   url: String
 });
 
-var Link = mongoose.model('Link', linkSchema);
-
-var createSha = function(url) {
+var createSha = function (url) {
   var shasum = crypto.createHash('sha1');
   shasum.update(url);
   return shasum.digest('hex').slice(0, 5);
 };
 
-linkSchema.pre('save', function(next) {
+linkSchema.pre('save', function (next) {
   var code = createSha(this.url);
+  console.log('addning code in save hook', code);
   this.code = code;
   next();
 });
+
+var Link = mongoose.model('Link', linkSchema);
 
 module.exports = Link;

@@ -113,8 +113,8 @@ module.exports = function (grunt) {
 
   grunt.registerTask('test', [
 
-    'eslint',
-    'mochaTest'
+    'mochaTest',
+    'eslint'
   ]);
 
   grunt.registerTask('build', [
